@@ -1,0 +1,24 @@
+{
+	"name": "intrfce/inertia-components",
+	"description": "",
+	"type": "library",
+	"version": "1.0",
+	"license": "proprietary",
+	"require": {},
+	"autoload": {
+		"psr-4": {
+			"Intrfce\\InertiaComponents\\": "src/",
+			"Intrfce\\InertiaComponents\\Tests\\": "tests/",
+			"Intrfce\\InertiaComponents\\Database\\Factories\\": "database/factories/",
+			"Intrfce\\InertiaComponents\\Database\\Seeders\\": "database/seeders/"
+		}
+	},
+	"minimum-stability": "stable",
+	"extra": {
+		"laravel": {
+			"providers": [
+				"Intrfce\\InertiaComponents\\Providers\\InertiaComponentsServiceProvider"
+			]
+		}
+	}
+}
