@@ -42,43 +42,50 @@ The `show` method is used when your route is hit with a `GET` request.
 If you return an `array` from this method, it will be merged with the rest of the public properties and methods, you can also
 use the usual `Inertia::lazy` and `Inertia::always` closures from here too.
 
-
-
-
+## Full (WIP) Example:
 
 ```php
 <?php
 
-class Login {
+class Dashboard extends Intrfce\InertiaComponents\InertiaComponent {
 
-    protected $template = 'Auth/Login';
+   // A template is required, or an exception will be thrown.
+    protected $template = 'Dashboard/Index';
 
-    public function show(Request $request): array
+   // Any public properties are passed to inertia.
+    public string $name = 'Dan';
+    
+    // As are any public methods.
+    public function email(): string 
     {
-        return [
-           
-        ];
+      return 'dan@hello.com';
     }
     
-    public function store()
+    // You can mark any method as Inertia::lazy() with the #[Lazy] Attribute:
+    #[\Intrfce\InertiaComponents\Attributes\Lazy]
+    public function blogPosts(): Collection
     {
-        $data = request()->validate([
-            'email' => 'required',
-            'password' => 'required|confirmed',
-        ]);
-        
-        $authenticated = \Illuminate\Support\Facades\Auth::attempt([
-            'email' => $data['email'],
-            'password' => $data['password'],
-        ]);
-        
-        if ($authenticated) {
-            return redirect('dashboard');
-        } else {
-            return redirect()->back()->withErrors(['Your username and password were incorrect.']);
-        }
-    
+        return BlogPosts::all();
     }
+    
+    // You can mark any method as Inertia::always() with the #[Always] Attribute:
+    #[\Intrfce\InertiaComponents\Attributes\Always]
+    public function age(): int
+    {
+        return 36;
+    }
+    
+    /** GET /dashboard */
+    public function show(Request $request) {}
+    
+    /** POST /dashboard */
+    public function store(Request $request) {}
+    
+    /** PUT/PATCH /dashboard */
+    public function update(Request $request) {}
+    
+    /** DELETE /dashboard */
+    public function destroy(Request $request) {}
 
 }
 ```
