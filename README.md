@@ -1,4 +1,4 @@
-# Inertia Components
+# Laravel Inertia Components
 
 > [!WARNING]  
 > This package is in a pre-release state and the API may change.
@@ -60,7 +60,7 @@ class Dashboard extends Intrfce\InertiaComponents\InertiaComponent {
     {
       return 'dan@hello.com';
     }
-    
+    i
     // You can mark any method as Inertia::lazy() with the #[Lazy] Attribute:
     #[\Intrfce\InertiaComponents\Attributes\Lazy]
     public function blogPosts(): Collection
