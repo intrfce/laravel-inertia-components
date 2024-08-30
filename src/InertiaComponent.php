@@ -5,8 +5,11 @@ namespace Intrfce\InertiaComponents;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Intrfce\InertiaComponents\Attributes\Http\DeleteAction;
 use Intrfce\InertiaComponents\Attributes\Http\GetAction;
+use Intrfce\InertiaComponents\Attributes\Http\PatchAction;
 use Intrfce\InertiaComponents\Attributes\Http\PostAction;
+use Intrfce\InertiaComponents\Attributes\Http\PutAction;
 use Intrfce\InertiaComponents\Contacts\HttpActionContract;
 use Intrfce\InertiaComponents\Data\ComponentMeta;
 use Intrfce\InertiaComponents\Exceptions\MissingHttpMethodException;
@@ -44,7 +47,7 @@ abstract class InertiaComponent
             ->reject(fn (ReflectionMethod $method) => in_array($method->getName(), self::$reservedMethodNames))
             ->keyBy(fn (ReflectionMethod $method) => $method->getName())
             ->flatMap(function (ReflectionMethod $method) {
-                return collect([GetAction::class, PostAction::class])
+                return collect([GetAction::class, PostAction::class, PutAction::class, PatchAction::class, DeleteAction::class])
                     ->map(function ($methodAttributeClass) use ($method) {
                         $methodAttributes = $method->getAttributes($methodAttributeClass);
                         if (! empty($methodAttributes[0])) {

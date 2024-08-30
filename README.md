@@ -88,14 +88,14 @@ class Dashboard extends Intrfce\InertiaComponents\InertiaComponent {
     }
     
     // You can mark any method as Inertia::lazy() with the #[Lazy] Attribute:
-    #[\Intrfce\InertiaComponents\Attributes\Lazy]
+    #[Lazy]
     public function blogPosts(): Collection
     {
         return BlogPosts::all();
     }
     
     // You can mark any method as Inertia::always() with the #[Always] Attribute:
-    #[\Intrfce\InertiaComponents\Attributes\Always]
+    #[Always]
     public function age(): int
     {
         return 36;
