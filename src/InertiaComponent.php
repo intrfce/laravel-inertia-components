@@ -2,7 +2,11 @@
 namespace Intrfce\InertiaComponents;
 
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Intrfce\InertiaComponents\Attributes\Http\GetAction;
+use Intrfce\InertiaComponents\Attributes\Http\PostAction;
+use Intrfce\InertiaComponents\Contacts\HttpActionContract;
 use Intrfce\InertiaComponents\Data\ComponentMeta;
 use Intrfce\InertiaComponents\Exceptions\MissingHttpMethodException;
 use ReflectionClassConstant;
@@ -10,7 +14,12 @@ use Symfony\Component\HttpFoundation\Request;
 
 abstract class InertiaComponent {
 
-    private array $reservedMethodNames = [
+    /**
+     * @var string[]
+     */
+    public static array $registeredResourceRoutes = [];
+
+    private static array $reservedMethodNames = [
         'show','store','destroy','update'
     ];
 
@@ -45,7 +54,7 @@ abstract class InertiaComponent {
 
         $publicMethods = collect($reflectionClass->getMethods(\ReflectionMethod::IS_PUBLIC))
             ->reject(fn (\ReflectionMethod $method) => str_starts_with($method->getName(), '__'))
-            ->reject(fn (\ReflectionMethod $method) => in_array($method->getName(), $this->reservedMethodNames))
+            ->reject(fn (\ReflectionMethod $method) => in_array($method->getName(), self::$reservedMethodNames))
             ->keyBy(fn (\ReflectionMethod $method) => $method->getName())
             ->map(function (\ReflectionMethod $method) {
                 if ($this->isPropertyMethodLazy($method->getName())) {
@@ -66,6 +75,44 @@ abstract class InertiaComponent {
             )])
             ->toArray();
         return Inertia::render($this->template, $merged);
+    }
+
+    /**
+     * @return array
+     */
+    public static function getActionRoutesToRegister(): array
+    {
+        $reflectionClass = new \ReflectionClass(static::class);
+
+        return collect($reflectionClass->getMethods(\ReflectionMethod::IS_PUBLIC))
+            ->reject(fn (\ReflectionMethod $method) => str_starts_with($method->getName(), '__'))
+            ->reject(fn (\ReflectionMethod $method) => in_array($method->getName(), self::$reservedMethodNames))
+            ->keyBy(fn (\ReflectionMethod $method) => $method->getName())
+            ->flatMap(function (\ReflectionMethod $method) {
+                return collect([GetAction::class, PostAction::class])
+                    ->map(function($methodAttributeClass) use ($method) {
+                        $methodAttributes = $method->getAttributes($methodAttributeClass);
+                        if (!empty($methodAttributes[0])) {
+
+                            $methodClass = $methodAttributes[0]->getName();
+                            /** @var HttpActionContract $method */
+                            $httpMethod = (new $methodClass)->method();
+                            $url = Str::kebab($method->getName());
+                            return [
+                                'method' => strtolower($httpMethod),
+                                'path' => $url,
+                                'name' => Str::snake($url, '_'),
+                                'target_function' => $method->getName(),
+                                'target_class' => static::class,
+                            ];
+                        } else {
+                            return null;
+                        }
+                    })
+                    ->values();
+            })
+            ->filter()
+            ->all();
     }
 
     /**
