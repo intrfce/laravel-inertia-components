@@ -4,5 +4,5 @@ namespace Intrfce\InertiaComponents\Contacts;
 
 interface HttpActionContract
 {
-    public function method():string;
+    public function method(): string;
 }

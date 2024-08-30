@@ -5,31 +5,28 @@ namespace Intrfce\InertiaComponents\Services;
 use Exception;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Route as RouteFacade;
+
 /**
  * @mixin  Illuminate\Routing\Route;
  */
 class RouteRegistrationProxy
 {
-
-    protected array $resources = ['show','store','update','destroy'];
-protected ?string $baseName = null;
+    protected array $resources = ['show', 'store', 'update', 'destroy'];
+    protected ?string $baseName = null;
     /**
      * Store any method calls here to be passed to the route definitions.
-     * @var array
      */
     protected array $proxiedMethodCalls = [];
 
-    public function __construct(public readonly string $path, public readonly string $classComponent)
-    {
-
-    }
+    public function __construct(public readonly string $path, public readonly string $classComponent) {}
 
     /**
      * Provide which sub-routes you want to define.
      * show() is not optional though.
      *
-     * @param string[] $toRegister
+     * @param  string[]  $toRegister
      * @return void
+     *
      * @throws Exception
      */
     public function only(array $toRegister): self
@@ -37,10 +34,10 @@ protected ?string $baseName = null;
         $accepts = collect($this->resources);
         $this->resources = collect($toRegister)
             ->unique()
-            ->each(function($route) use ($accepts) {
-                   if (!$accepts->contains($route)) {
-                       throw new Exception("The route method '{$route}' is not recognised, only ".$accepts->join(',', 'and').' are accepted');
-                   }
+            ->each(function ($route) use ($accepts) {
+                if (! $accepts->contains($route)) {
+                    throw new Exception("The route method '{$route}' is not recognised, only " . $accepts->join(',', 'and') . ' are accepted');
+                }
             })
             ->push('show') // Always has to be there.
             ->toArray();
@@ -48,15 +45,10 @@ protected ?string $baseName = null;
         return $this;
     }
 
-    public function name(string $name):self
+    public function name(string $name): self
     {
         $this->baseName = $name;
-        return $this;
-    }
 
-    public function __call(string $method, array $parameters): self
-    {
-        $this->proxiedMethodCalls[$method] = $parameters;
         return $this;
     }
 
@@ -64,31 +56,38 @@ protected ?string $baseName = null;
     {
         foreach ($this->resources as $resource) {
 
-            $baseDefinition = match($resource) {
-                'show'=> RouteFacade::get($this->path, [$this->classComponent, $resource]),
-                'store' => RouteFacade::post($this->path, [$this->classComponent, $resource]),
-                'update' => RouteFacade::patch($this->path, [$this->classComponent, $resource]),
-                'destroy'=> RouteFacade::delete($this->path, [$this->classComponent, $resource]),
+            $baseDefinition = match ($resource) {
+                'show' => RouteFacade::get($this->path, [$this->classComponent, 'showProxy']),
+                'store' => RouteFacade::post($this->path, [$this->classComponent, 'storeProxy']),
+                'update' => RouteFacade::patch($this->path, [$this->classComponent, 'updateProxy']),
+                'destroy' => RouteFacade::delete($this->path, [$this->classComponent, 'destroyProxy']),
             };
 
             if ($this->baseName !== null) {
-                $baseDefinition->name("$this->baseName.$resource");
+                $baseDefinition->name("{$this->baseName}.{$resource}");
             }
 
-            if (!empty($this->proxiedMethodCalls)) {
+            if (! empty($this->proxiedMethodCalls)) {
                 foreach ($this->proxiedMethodCalls as $method => $params) {
-                    $baseDefinition = call_user_func_array($baseDefinition,$params);
+                    $baseDefinition = call_user_func_array($baseDefinition, $params);
                 }
             }
         }
 
         // Register any action routes.
-        foreach ($this->classComponent::getActionRoutesToRegister() as $route) {
+        foreach (call_user_func($this->classComponent.'::getActionRoutesToRegister') as $route) {
             RouteFacade::{$route['method']}(
-                $this->path.'/'.$route['path'],
+                $this->path . '/' . $route['path'],
                 [$route['target_class'], $route['target_function']],
-            )->name($this->baseName.'.'.$route['name']);
+            )->name($this->baseName . '.' . $route['name']);
         }
 
+    }
+
+    public function __call(string $method, array $parameters): self
+    {
+        $this->proxiedMethodCalls[$method] = $parameters;
+
+        return $this;
     }
 }

@@ -6,12 +6,12 @@ use Attribute;
 use Intrfce\InertiaComponents\Contacts\HttpActionContract;
 
 #[Attribute]
-class GetAction implements HttpActionContract
+class PutAction implements HttpActionContract
 {
     public function __construct(?string $path = null) {}
 
     public function method(): string
     {
-        return 'GET';
+        return 'PUT';
     }
 }
