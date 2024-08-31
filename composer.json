@@ -2,7 +2,6 @@
 	"name": "intrfce/laravel-inertia-components",
 	"description": "",
 	"type": "library",
-	"version": "1.0",
 	"license": "proprietary",
 	"require": {
 		"php": "^8.2.0",
