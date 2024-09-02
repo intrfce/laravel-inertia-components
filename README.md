@@ -112,6 +112,34 @@ class Dashboard extends Intrfce\InertiaComponents\InertiaComponent {
     
     /** DELETE /dashboard */
     public function destroy(Request $request) {}
+    
+    /** GET /dashboard/your-route - Autowired */
+    #[GetAction('your-route')]
+    public function getMoreStuff()
+    {
+    
+    }
+    
+    /** POST /dashboard/your-route - Autowired */
+    #[GetAction('your-route')]
+    public function postMoreStuff()
+    {
+    
+    }
+    
+    /** PATCH /dashboard/patch-more-stuff - Autowired  - notice the route URL derived from the function name */
+    #[PatchAction()]
+    public function patchMoreStuff()
+    {
+    
+    }
+    
+    /** DELETE /dashboard/{item}/delete - Autowired */
+    #[DeleteAction('{item}/delete')]
+    public function deleteAnItem(ItemModel $item)
+    {
+    
+    }
 
 }
 ```
